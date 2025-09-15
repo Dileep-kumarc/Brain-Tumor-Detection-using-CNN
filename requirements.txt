@@ -1,6 +1,6 @@
-torch==2.5.0
-torchvision==0.20.0
-torchaudio==2.5.0
+torch
+torchvision
+torchaudio
 streamlit
 numpy
 pillow
