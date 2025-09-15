@@ -1,9 +1,7 @@
 torch==2.5.0
 torchvision==0.20.0
 torchaudio==2.5.0
-
-tensorflow==2.15.0
-numpy
 streamlit
+numpy
 pillow
 matplotlib
