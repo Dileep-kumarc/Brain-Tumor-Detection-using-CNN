@@ -7,3 +7,5 @@ opencv-python-headless
 plotly
 torch
 torchvision
+kagglehub
+reportlab
