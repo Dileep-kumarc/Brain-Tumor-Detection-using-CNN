@@ -8,26 +8,28 @@ from torchvision import transforms
 from PIL import Image
 import cv2
 import matplotlib
-matplotlib.use('Agg')  # Set the backend before importing pyplot
-import matplotlib.pyplot as plt  # Now this is at the top level
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import time
 import plotly.express as px
+import kagglehub
 
-# Rest of your code remains the same...
+# ======================
+# KAGGLE AUTH
+# ======================
+os.environ["KAGGLE_TOKEN"] = st.secrets["KAGGLE_TOKEN"]
 
 # ======================
 # MODEL DEFINITIONS
 # ======================
-import kagglehub
-import os
 
 @st.cache_resource
 def load_models():
-    # Download all 4 models from Kaggle
-    path1 = kagglehub.model_download("dileepkumarc/mri-and-non-mri-classification")
-    path2 = kagglehub.model_download("dileepkumarc/mri-classifer")
-    path3 = kagglehub.model_download("dileepkumarc/segmention-of-mri")
-    path4 = kagglehub.model_download("dileepkumarc/brain-tumor-size")
+    # Download all 4 models from Kaggle with correct handles
+    path1 = kagglehub.model_download("dileepkumarc/mri-and-non-mri-classification/pyTorch/default")
+    path2 = kagglehub.model_download("dileepkumarc/mri-classifer/tensorFlow2/default")
+    path3 = kagglehub.model_download("dileepkumarc/segmention-of-mri/tensorFlow2/default")
+    path4 = kagglehub.model_download("dileepkumarc/brain-tumor-size/tensorFlow2/default")
 
     def load_custom_model():
         class CustomCNN(nn.Module):
@@ -60,15 +62,16 @@ def load_models():
 
     custom_cnn_model = load_custom_model()
 
-    h5_classifier  = [f for f in os.listdir(path2) if f.endswith('.h5')][0]
+    h5_classifier   = [f for f in os.listdir(path2) if f.endswith('.h5')][0]
     h5_segmentation = [f for f in os.listdir(path3) if f.endswith('.h5')][0]
-    h5_tumor_size  = [f for f in os.listdir(path4) if f.endswith('.h5')][0]
+    h5_tumor_size   = [f for f in os.listdir(path4) if f.endswith('.h5')][0]
 
     classifier_model   = tf.keras.models.load_model(os.path.join(path2, h5_classifier))
     segmentation_model = tf.keras.models.load_model(os.path.join(path3, h5_segmentation))
     tumor_size_model   = tf.keras.models.load_model(os.path.join(path4, h5_tumor_size))
 
     return custom_cnn_model, classifier_model, segmentation_model, tumor_size_model
+
 # ======================
 # PROCESSING FUNCTIONS
 # ======================
@@ -132,7 +135,6 @@ def predict_tumor_size(mask, model):
 # ======================
 
 def home_page():
-    # Hero Section
     st.markdown("""
     <div class="hero">
         <div class="hero-image-main">
@@ -163,13 +165,8 @@ def home_page():
         gap: 3rem;
         margin-bottom: 2rem;
     }
-    .hero-content {
-        flex: 1;
-        text-align: left;
-    }
-    .hero-image-main {
-        flex: 1;
-    }
+    .hero-content { flex: 1; text-align: left; }
+    .hero-image-main { flex: 1; }
     .hero-image-main img {
         width: 100%;
         height: auto;
@@ -177,25 +174,13 @@ def home_page():
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     @media (max-width: 768px) {
-        .hero {
-            flex-direction: column;
-            text-align: center;
-        }
-        .hero-content {
-            text-align: center;
-            order: 2;
-        }
-        .hero-image-main {
-            order: 1;
-        }
+        .hero { flex-direction: column; text-align: center; }
+        .hero-content { text-align: center; order: 2; }
+        .hero-image-main { order: 1; }
     }
     </style>
     """, unsafe_allow_html=True)
-    
-    # Remove the duplicate image
-    # st.image("assets/BrainTumor.JPG", use_column_width=True, caption="Advanced MRI Analysis Technology")
 
-    # Key Features Section
     st.markdown("""
     <div class="features">
         <div class="feature-card">
@@ -229,7 +214,6 @@ def home_page():
             </ul>
         </div>
     </div>
-
     <div class="info-section">
         <h2>Why Choose Our Platform?</h2>
         <div class="info-grid">
@@ -253,10 +237,8 @@ def home_page():
     </div>
     """, unsafe_allow_html=True)
 
-    # Statistics Section with Enhanced Styling
     st.markdown("<h2 class='section-title'>Brain Tumor Statistics</h2>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
-    
     with col1:
         fig = px.pie(
             names=["Glioma", "Meningioma", "Pituitary", "No Tumor"],
@@ -266,7 +248,6 @@ def home_page():
         )
         fig.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig, use_container_width=True)
-    
     with col2:
         fig = px.bar(
             x=["MRI Validation", "Tumor Classification", "Segmentation"],
@@ -279,7 +260,6 @@ def home_page():
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
-    # Workflow Section
     st.markdown("""
     <div class="workflow-section">
         <h2>How It Works</h2>
@@ -301,10 +281,6 @@ def home_page():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-
-    # Call to Action Section
-    st.markdown("""
     <div class="cta-section">
         <h2>Ready to Start Your Analysis?</h2>
         <p>Upload your brain MRI scan now and get instant results</p>
@@ -347,8 +323,6 @@ def analysis_page():
                 progress_bar.progress(75)
 
                 st.subheader("Tumor Segmentation")
-                # Fix: Explicitly import matplotlib.pyplot here to ensure it's available
-                import matplotlib.pyplot as plt
                 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
                 ax1.imshow(image)
                 ax1.set_title("Original Image")
@@ -371,7 +345,6 @@ def analysis_page():
             progress_bar.empty()
             st.balloons()
 
-            # Report Generation Section
             st.markdown("""
             <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 30px;'>
                 <h3 style='color: #1565c0;'>📋 Analysis Report</h3>
@@ -383,12 +356,10 @@ def analysis_page():
                 from reportlab.lib import colors
                 from reportlab.lib.pagesizes import letter
                 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-                from reportlab.platypus import Image as RLImage  # Rename Image import from reportlab
+                from reportlab.platypus import Image as RLImage
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from io import BytesIO
-                import matplotlib.pyplot as plt
 
-                # Save images to bytes
                 original_img_bytes = BytesIO()
                 plt.figure(figsize=(6, 6))
                 plt.imshow(image)
@@ -405,13 +376,11 @@ def analysis_page():
                 plt.savefig(mask_img_bytes, format='png', bbox_inches='tight')
                 plt.close()
 
-                # Create PDF
                 pdf_buffer = BytesIO()
                 doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
                 styles = getSampleStyleSheet()
                 story = []
 
-                # Header
                 header_style = ParagraphStyle(
                     'CustomHeader',
                     parent=styles['Heading1'],
@@ -420,13 +389,10 @@ def analysis_page():
                 )
                 story.append(Paragraph("Brain Tumor Analysis Report", header_style))
                 story.append(Spacer(1, 20))
-
-                # Patient Information
                 story.append(Paragraph(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}", styles["Normal"]))
                 story.append(Spacer(1, 20))
-
-                # Analysis Results
                 story.append(Paragraph("Analysis Results", styles["Heading2"]))
+
                 data = [
                     ["Parameter", "Value"],
                     ["Tumor Type", tumor_type],
@@ -451,12 +417,11 @@ def analysis_page():
                 ]))
                 story.append(table)
                 story.append(Spacer(1, 20))
-
-                # Images
                 story.append(Paragraph("MRI Scan Analysis", styles["Heading2"]))
                 story.append(Spacer(1, 10))
 
-                # Add images side by side
+                original_img_bytes.seek(0)
+                mask_img_bytes.seek(0)
                 original_img = RLImage(original_img_bytes, width=250, height=250)
                 mask_img = RLImage(mask_img_bytes, width=250, height=250)
                 image_table = Table([[original_img, mask_img]], colWidths=[250, 250])
@@ -465,26 +430,24 @@ def analysis_page():
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ]))
                 story.append(image_table)
-
-                # Disclaimer
                 story.append(Spacer(1, 30))
                 story.append(Paragraph("Disclaimer", styles["Heading3"]))
                 story.append(Paragraph(
                     "This report is generated by an AI system and should be reviewed by a qualified healthcare professional. "
                     "The results should be considered as supplementary information for clinical decision-making.",
-                    styles["Normal"]))
+                    styles["Normal"]
+                ))
 
-                # Build PDF
                 doc.build(story)
                 pdf_bytes = pdf_buffer.getvalue()
 
-                # Create download button
                 st.download_button(
                     label="📥 Download PDF Report",
                     data=pdf_bytes,
                     file_name=f"brain_tumor_analysis_{time.strftime('%Y%m%d_%H%M%S')}.pdf",
                     mime="application/pdf",
                 )
+
 # ======================
 # MAIN APP CONFIG
 # ======================
@@ -494,7 +457,6 @@ def main():
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-    # Top Nav Bar
     st.markdown("""
     <div class="top-nav">
         <div class="nav-container">
