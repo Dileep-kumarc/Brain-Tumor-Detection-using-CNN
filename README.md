@@ -244,6 +244,15 @@ Brain-Tumor-Detection-using-CNN/
 
 ---
 
+#### 📦 Pre-trained Model Weights
+
+| Model | Framework | Download |
+|-------|-----------|----------|
+| best_mri_classifier.pth | PyTorch | [Kaggle](https://www.kaggle.com/models/dileepkumarc/mri-and-non-mri-classification) |
+| brain_tumor_classifier_augmented_finetuned.h5 | TensorFlow | [Kaggle](https://www.kaggle.com/models/dileepkumarc/mri-classifer) |
+| brain_tumor_segmentation_unet.h5 | TensorFlow | [Kaggle](https://www.kaggle.com/models/dileepkumarc/segmention-of-mri) |
+| tumor_size_model.h5 | TensorFlow | [Kaggle](https://www.kaggle.com/models/dileepkumarc/brain-tumor-size) |
+
 ## 👨‍💻 Author
 
 <div align="center">

@@ -18,10 +18,17 @@ import plotly.express as px
 # ======================
 # MODEL DEFINITIONS
 # ======================
+import kagglehub
+import os
 
 @st.cache_resource
 def load_models():
-    """Load all ML models with caching"""
+    # Download all 4 models from Kaggle
+    path1 = kagglehub.model_download("dileepkumarc/mri-and-non-mri-classification")
+    path2 = kagglehub.model_download("dileepkumarc/mri-classifer")
+    path3 = kagglehub.model_download("dileepkumarc/segmention-of-mri")
+    path4 = kagglehub.model_download("dileepkumarc/brain-tumor-size")
+
     def load_custom_model():
         class CustomCNN(nn.Module):
             def __init__(self):
@@ -42,17 +49,26 @@ def load_models():
                 x = self.fc2(x)
                 return x
 
+        pth_file = [f for f in os.listdir(path1) if f.endswith('.pth')][0]
         model = CustomCNN()
-        model.load_state_dict(torch.load(r"C:\main project files\mri and non mri classfier\best_mri_classifier.pth", map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(
+            os.path.join(path1, pth_file),
+            map_location=torch.device('cpu')
+        ))
         model.eval()
         return model
 
     custom_cnn_model = load_custom_model()
-    classifier_model = tf.keras.models.load_model(r"C:\Users\dilee\Downloads\cnn model traning\brain_tumor_classifier.h5")
-    segmentation_model = tf.keras.models.load_model(r"C:\Users\dilee\Downloads\cnn model traning\brain_tumor_segmentation_unet.h5")
-    tumor_size_model = tf.keras.models.load_model(r"C:\Users\dilee\Downloads\tumor_size_model.h5")
-    return custom_cnn_model, classifier_model, segmentation_model, tumor_size_model
 
+    h5_classifier  = [f for f in os.listdir(path2) if f.endswith('.h5')][0]
+    h5_segmentation = [f for f in os.listdir(path3) if f.endswith('.h5')][0]
+    h5_tumor_size  = [f for f in os.listdir(path4) if f.endswith('.h5')][0]
+
+    classifier_model   = tf.keras.models.load_model(os.path.join(path2, h5_classifier))
+    segmentation_model = tf.keras.models.load_model(os.path.join(path3, h5_segmentation))
+    tumor_size_model   = tf.keras.models.load_model(os.path.join(path4, h5_tumor_size))
+
+    return custom_cnn_model, classifier_model, segmentation_model, tumor_size_model
 # ======================
 # PROCESSING FUNCTIONS
 # ======================
