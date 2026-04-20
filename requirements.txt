@@ -1,7 +1,7 @@
 torch
 torchvision
 torchaudio
-tensorflow-cpu
+tensorflow-cpu==2.17.1
 streamlit
 numpy
 pillow
